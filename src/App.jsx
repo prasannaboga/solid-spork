@@ -1,27 +1,12 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
 import './App.css'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import LocationDisplay from './components/LocationDisplay.jsx';
+import PlaceDisplay from './components/PlaceDisplay.jsx';
+import WeatherInfo from './components/WeatherInfo.jsx';
+import ForecastTrends from './components/ForecastTrends.jsx';
+import ForecastGraph from './components/ForecastGraph.jsx';
+import { getWeatherEmoji } from './utils/weatherUtils';
 
 const themes = {
   light: {
@@ -42,19 +27,6 @@ const themes = {
     card: '#cce0ff',
     border: '#99c2ff',
   },
-};
-
-// Helper to get emoji based on weather code
-const getWeatherEmoji = (weatherCode) => {
-  if (weatherCode === undefined || weatherCode === null) return '';
-  if ([0, 1].includes(weatherCode)) return '☀️'; // Clear
-  if ([2, 3].includes(weatherCode)) return '⛅️'; // Partly cloudy
-  if ([45, 48].includes(weatherCode)) return '🌫️'; // Fog
-  if ([51, 53, 55, 56, 57].includes(weatherCode)) return '🌦️'; // Drizzle
-  if ([61, 63, 65, 80, 81, 82].includes(weatherCode)) return '🌧️'; // Rain
-  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) return '❄️'; // Snow
-  if ([95, 96, 99].includes(weatherCode)) return '⛈️'; // Thunderstorm
-  return '🌡️'; // Default
 };
 
 function App() {
@@ -116,6 +88,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    document.title = 'Weather Updates';
     document.body.style.background = themes[theme].background;
     document.body.style.color = themes[theme].color;
   }, [theme]);
@@ -146,142 +119,13 @@ function App() {
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {weather && !loading && !error && (
           <>
-          <div className="weather-info" style={{
-            background: themes[theme].card,
-            border: `1px solid ${themes[theme].border}`,
-            borderRadius: '8px',
-            padding: '1rem',
-            maxWidth: '320px',
-            margin: '0 auto',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-          }}>
-            <p style={{fontSize: '2rem', margin: 0}}>{getWeatherEmoji(weather.current.weathercode)}</p>
-            <p><strong>Temperature:</strong> {weather.current.temperature}°C</p>
-            <p><strong>Wind Speed:</strong> {weather.current.windspeed} km/h</p>
-            <p><strong>Weather Code:</strong> {weather.current.weathercode}</p>
-          </div>
-          {/* 3-day forecast trends */}
-          <div style={{
-            marginTop: '2rem',
-            background: themes[theme].card,
-            border: `1px solid ${themes[theme].border}`,
-            borderRadius: '8px',
-            padding: '1rem',
-            maxWidth: '420px',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-          }}>
-            <h2 style={{marginBottom: '1rem'}}>Next 3 Days Forecast</h2>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              {weather.daily && weather.daily.time && weather.daily.time.slice(1, 4).map((date, idx) => (
-                <div key={date} style={{
-                  background: themes[theme].background,
-                  color: themes[theme].color,
-                  border: `1px solid ${themes[theme].border}`,
-                  borderRadius: '6px',
-                  padding: '0.75rem',
-                  minWidth: '100px',
-                  textAlign: 'center',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
-                }}>
-                  <div style={{ fontWeight: 600 }}>{new Date(date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
-                  <div style={{ fontSize: '2rem', margin: '0.5em 0' }}>{getWeatherEmoji(weather.daily.weathercode[idx+1])}</div>
-                  <div style={{ fontSize: '1.2em', margin: '0.5em 0' }}>
-                    {weather.daily.temperature_2m_max[idx+1]}° / {weather.daily.temperature_2m_min[idx+1]}°C
-                  </div>
-                  <div style={{ fontSize: '0.9em', color: themes[theme].color, opacity: 0.7 }}>
-                    Code: {weather.daily.weathercode[idx+1]}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Forecast graph */}
-          {weather && weather.daily && weather.daily.time && (
-        <div style={{
-          marginTop: '2.5rem',
-          background: themes[theme].card,
-          border: `1px solid ${themes[theme].border}`,
-          borderRadius: '8px',
-          padding: '1.5rem',
-          maxWidth: '600px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-        }}>
-          <h2 style={{marginBottom: '1rem'}}>Forecast Graph</h2>
-          <Line
-            data={{
-              labels: weather.daily.time.map(date => new Date(date).toLocaleDateString()),
-              datasets: [
-                {
-                  label: 'Max Temp (°C)',
-                  data: weather.daily.temperature_2m_max,
-                  borderColor: '#e61e1e',
-                  backgroundColor: 'rgba(230,30,30,0.2)',
-                  tension: 0.3,
-                  fill: true,
-                },
-                {
-                  label: 'Min Temp (°C)',
-                  data: weather.daily.temperature_2m_min,
-                  borderColor: '#1976d2',
-                  backgroundColor: 'rgba(25,118,210,0.2)',
-                  tension: 0.3,
-                  fill: true,
-                }
-              ]
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { position: 'top' },
-                title: { display: false },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: 'Temperature (°C)' }
-                },
-                x: {
-                  title: { display: true, text: 'Date' }
-                }
-              }
-            }}
-            height={300}
-          />
-        </div>
-      )}
+            <WeatherInfo weather={weather.current} theme={theme} themes={themes} />
+            <ForecastTrends daily={weather.daily} theme={theme} themes={themes} />
+            <ForecastGraph daily={weather.daily} theme={theme} themes={themes} />
           </>
         )}
-        {location && !loading && !error && (
-          <div style={{
-            margin: '1rem auto',
-            maxWidth: 420,
-            textAlign: 'center',
-            fontWeight: 600,
-            fontSize: '1.1em',
-            color: 'rgb(230, 30, 30)', // 90% red
-            background: 'linear-gradient(90deg, #e61e1e 90%, #1ee64a 5%, #e6d81e 2%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>
-            Location: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
-          </div>
-        )}
-        {place && !loading && !error && (
-          <div style={{
-            margin: '0.5rem auto',
-            maxWidth: 420,
-            textAlign: 'center',
-            fontWeight: 600,
-            fontSize: '1.1em',
-          }}>
-            {place.city && <span style={{color: '#1976d2'}}>{place.city}, </span>}
-            {place.state && <span style={{color: '#1db954'}}>{place.state}, </span>}
-            {place.country && <span style={{color: '#a259e6'}}>{place.country}</span>}
-          </div>
-        )}
+        <LocationDisplay location={location && !loading && !error ? location : null} />
+        <PlaceDisplay place={place && !loading && !error ? place : null} />
         <p className="read-the-docs">
           Click on the Vite and React logos to learn more
         </p>
