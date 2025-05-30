@@ -44,6 +44,19 @@ const themes = {
   },
 };
 
+// Helper to get emoji based on weather code
+const getWeatherEmoji = (weatherCode) => {
+  if (weatherCode === undefined || weatherCode === null) return '';
+  if ([0, 1].includes(weatherCode)) return '☀️'; // Clear
+  if ([2, 3].includes(weatherCode)) return '⛅️'; // Partly cloudy
+  if ([45, 48].includes(weatherCode)) return '🌫️'; // Fog
+  if ([51, 53, 55, 56, 57].includes(weatherCode)) return '🌦️'; // Drizzle
+  if ([61, 63, 65, 80, 81, 82].includes(weatherCode)) return '🌧️'; // Rain
+  if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) return '❄️'; // Snow
+  if ([95, 96, 99].includes(weatherCode)) return '⛈️'; // Thunderstorm
+  return '🌡️'; // Default
+};
+
 function App() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -142,6 +155,7 @@ function App() {
             margin: '0 auto',
             boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
           }}>
+            <p style={{fontSize: '2rem', margin: 0}}>{getWeatherEmoji(weather.current.weathercode)}</p>
             <p><strong>Temperature:</strong> {weather.current.temperature}°C</p>
             <p><strong>Wind Speed:</strong> {weather.current.windspeed} km/h</p>
             <p><strong>Weather Code:</strong> {weather.current.weathercode}</p>
@@ -171,6 +185,7 @@ function App() {
                   boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
                 }}>
                   <div style={{ fontWeight: 600 }}>{new Date(date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                  <div style={{ fontSize: '2rem', margin: '0.5em 0' }}>{getWeatherEmoji(weather.daily.weathercode[idx+1])}</div>
                   <div style={{ fontSize: '1.2em', margin: '0.5em 0' }}>
                     {weather.daily.temperature_2m_max[idx+1]}° / {weather.daily.temperature_2m_min[idx+1]}°C
                   </div>
