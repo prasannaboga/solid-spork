@@ -115,14 +115,35 @@ function App() {
           </select>
         </div>
         <h1>Weather Updates</h1>
+        {place && !loading && !error && (
+          <div className="mb-2 text-center font-semibold text-lg">
+            <span className="text-blue-600">{place.city}</span>
+            {place.city && place.state && ', '}
+            <span className="text-green-600">{place.state}</span>
+            {((place.city || place.state) && place.country) && ', '}
+            <span className="text-purple-500">{place.country}</span>
+          </div>
+        )}
+        {location && !loading && !error && (
+          <div className="mb-4 text-center text-sm text-gray-700">
+            Coordinates: <span className="font-mono">{location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
+          </div>
+        )}
         {loading && <p>Loading...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {weather && !loading && !error && (
-          <>
-            <WeatherInfo weather={weather.current} theme={theme} themes={themes} />
-            <ForecastTrends daily={weather.daily} theme={theme} themes={themes} />
-            <ForecastGraph daily={weather.daily} theme={theme} themes={themes} />
-          </>
+          <div className="flex flex-col md:flex-row gap-6 justify-center items-start w-full mb-6">
+            <div className="flex-1 min-w-[280px]">
+              <WeatherInfo weather={weather.current} theme={theme} themes={themes} />
+            </div>
+            <div className="flex-1 min-w-[320px]">
+              <ForecastTrends daily={weather.daily} theme={theme} themes={themes} />
+            </div>
+          </div>
+        )}
+        {/* Forecast graph remains below */}
+        {weather && !loading && !error && (
+          <ForecastGraph daily={weather.daily} theme={theme} themes={themes} />
         )}
         <LocationDisplay location={location && !loading && !error ? location : null} />
         <PlaceDisplay place={place && !loading && !error ? place : null} />
