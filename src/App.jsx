@@ -1,6 +1,27 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 import './App.css'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const themes = {
   light: {
@@ -86,23 +107,11 @@ function App() {
     document.body.style.color = themes[theme].color;
   }, [theme]);
 
-  // Helper to get background image URL based on weather code
-  const getWeatherBg = (weatherCode) => {
-    // Simple mapping for demo; you can expand this
-    if (!weatherCode && weatherCode !== 0) return '';
-    if ([0, 1].includes(weatherCode)) return 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80'; // Clear
-    if ([2, 3, 45, 48].includes(weatherCode)) return 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=1500&q=80'; // Cloudy/Fog
-    if ([51, 53, 55, 56, 57, 61, 63, 65, 80, 81, 82].includes(weatherCode)) return 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1500&q=80'; // Rain
-    if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) return 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1500&q=80'; // Snow
-    if ([95, 96, 99].includes(weatherCode)) return 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1500&q=80'; // Thunderstorm
-    return 'https://images.unsplash.com/photo-1465101178521-c1a9136a3b99?auto=format&fit=crop&w=1500&q=80'; // Default
-  };
-
   return (
     <div
       className="weather-container"
       style={{
-        background: weather && weather.current ? `url(${getWeatherBg(weather.current.weathercode)}) center/cover no-repeat` : themes[theme].background,
+        background: themes[theme].background,
         color: themes[theme].color,
         minHeight: '100vh',
         padding: '2rem',
@@ -110,16 +119,6 @@ function App() {
         position: 'relative',
       }}
     >
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: weather && weather.current ? 'rgba(0,0,0,0.35)' : 'none',
-        zIndex: 0,
-        pointerEvents: 'none',
-      }} />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
           <label htmlFor="theme-select" style={{ marginRight: '0.5rem' }}>Theme:</label>
@@ -182,6 +181,61 @@ function App() {
               ))}
             </div>
           </div>
+          {/* Forecast graph */}
+          {weather && weather.daily && weather.daily.time && (
+        <div style={{
+          marginTop: '2.5rem',
+          background: themes[theme].card,
+          border: `1px solid ${themes[theme].border}`,
+          borderRadius: '8px',
+          padding: '1.5rem',
+          maxWidth: '600px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+        }}>
+          <h2 style={{marginBottom: '1rem'}}>Forecast Graph</h2>
+          <Line
+            data={{
+              labels: weather.daily.time.map(date => new Date(date).toLocaleDateString()),
+              datasets: [
+                {
+                  label: 'Max Temp (°C)',
+                  data: weather.daily.temperature_2m_max,
+                  borderColor: '#e61e1e',
+                  backgroundColor: 'rgba(230,30,30,0.2)',
+                  tension: 0.3,
+                  fill: true,
+                },
+                {
+                  label: 'Min Temp (°C)',
+                  data: weather.daily.temperature_2m_min,
+                  borderColor: '#1976d2',
+                  backgroundColor: 'rgba(25,118,210,0.2)',
+                  tension: 0.3,
+                  fill: true,
+                }
+              ]
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { position: 'top' },
+                title: { display: false },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: { display: true, text: 'Temperature (°C)' }
+                },
+                x: {
+                  title: { display: true, text: 'Date' }
+                }
+              }
+            }}
+            height={300}
+          />
+        </div>
+      )}
           </>
         )}
         {location && !loading && !error && (
