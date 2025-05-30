@@ -95,61 +95,57 @@ function App() {
 
   return (
     <div
-      className="weather-container"
+      className="weather-container min-h-screen w-full flex flex-col items-center justify-start bg-cover bg-no-repeat px-2 md:px-0"
       style={{
         background: themes[theme].background,
         color: themes[theme].color,
-        minHeight: '100vh',
-        padding: '2rem',
         transition: 'background 0.3s, color 0.3s',
         position: 'relative',
       }}
     >
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-          <label htmlFor="theme-select" style={{ marginRight: '0.5rem' }}>Theme:</label>
-          <select id="theme-select" value={theme} onChange={e => setTheme(e.target.value)}>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="blue">Blue</option>
-          </select>
+      <div className="w-full max-w-4xl mx-auto mt-4 md:mt-10 p-4 md:p-8 rounded-xl shadow-lg bg-white/80 dark:bg-gray-900/80 relative z-10">
+        <div className="flex flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex-1 flex flex-col items-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Weather Updates</h1>
+            {place && !loading && !error && (
+              <div className="mb-2 text-center font-semibold text-lg">
+                <span className="text-blue-600">{place.city}</span>
+                {place.city && place.state && ', '}
+                <span className="text-green-600">{place.state}</span>
+                {((place.city || place.state) && place.country) && ', '}
+                <span className="text-purple-500">{place.country}</span>
+              </div>
+            )}
+            {location && !loading && !error && (
+              <div className="mb-4 text-center text-sm text-gray-700">
+                Coordinates: <span className="font-mono">{location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2 absolute right-4 top-4 md:static md:relative md:right-0 md:top-0">
+            <label htmlFor="theme-select" className="font-medium">Theme:</label>
+            <select id="theme-select" value={theme} onChange={e => setTheme(e.target.value)} className="rounded border px-2 py-1">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="blue">Blue</option>
+            </select>
+          </div>
         </div>
-        <h1>Weather Updates</h1>
-        {place && !loading && !error && (
-          <div className="mb-2 text-center font-semibold text-lg">
-            <span className="text-blue-600">{place.city}</span>
-            {place.city && place.state && ', '}
-            <span className="text-green-600">{place.state}</span>
-            {((place.city || place.state) && place.country) && ', '}
-            <span className="text-purple-500">{place.country}</span>
-          </div>
-        )}
-        {location && !loading && !error && (
-          <div className="mb-4 text-center text-sm text-gray-700">
-            Coordinates: <span className="font-mono">{location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}</span>
-          </div>
-        )}
-        {loading && <p>Loading...</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {loading && <p className="text-center">Loading...</p>}
+        {error && <p className="text-center text-red-600">{error}</p>}
         {weather && !loading && !error && (
           <div className="flex flex-col md:flex-row gap-6 justify-center items-start w-full mb-6">
-            <div className="flex-1 min-w-[280px]">
+            <div className="flex-1 min-w-[260px]">
               <WeatherInfo weather={weather.current} theme={theme} themes={themes} />
             </div>
-            <div className="flex-1 min-w-[320px]">
+            <div className="flex-1 min-w-[260px]">
               <ForecastTrends daily={weather.daily} theme={theme} themes={themes} />
             </div>
           </div>
         )}
-        {/* Forecast graph remains below */}
         {weather && !loading && !error && (
           <ForecastGraph daily={weather.daily} theme={theme} themes={themes} />
         )}
-        <LocationDisplay location={location && !loading && !error ? location : null} />
-        <PlaceDisplay place={place && !loading && !error ? place : null} />
-        <p className="read-the-docs">
-          Click on the Vite and React logos to learn more
-        </p>
       </div>
     </div>
   )
